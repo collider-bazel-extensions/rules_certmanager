@@ -106,6 +106,23 @@ def _install(args, env: dict[str, str]) -> int:
     if rc != 0:
         return rc
 
+    # Block until cert-manager's three Deployments are Available. itest's
+    # health_check would eventually catch this on its own, but downstream
+    # services that depend on cert-manager being *fully* webhook-ready
+    # (e.g. operators with their own Certificate resources) hit subtle
+    # races if the install service goes idle the moment kubectl-apply
+    # returns. Explicitly waiting here gives cainjector + webhook time
+    # to come fully online before we declare the install done.
+    print(f"rules_certmanager: waiting for Deployments in {args.namespace} to be Available",
+          file=sys.stderr, flush=True)
+    rc = _run(
+        [kubectl, "--kubeconfig", kubeconfig, "-n", args.namespace, "wait",
+         "deploy", "--all", "--for=condition=Available", "--timeout=300s"],
+        env,
+    )
+    if rc != 0:
+        return rc
+
     # Stay alive so itest treats us as a long-running service. The actual
     # readiness gate is `cert_manager_health_check`, which itest polls.
     print("rules_certmanager: install applied; sleeping until SIGTERM",
