@@ -1,0 +1,37 @@
+"""rules_certmanager — hermetic cert-manager install + readiness for Bazel tests."""
+
+module(
+    name = "rules_certmanager",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_python", version = "1.7.0")
+
+cert_manager = use_extension("//:extensions.bzl", "cert_manager")
+
+# Pinned cert-manager release. The extension fetches `cert-manager.yaml`
+# from the matching GitHub release and sha256-verifies it; consumers don't
+# need helm, kubectl-only at runtime. Add more versions by tagging them in
+# private/versions.bzl and calling cert_manager.version() again.
+cert_manager.version(
+    name = "cert_manager",
+    version = "1.18.3",
+)
+
+use_repo(cert_manager, "cert_manager")
+
+register_toolchains("@cert_manager//:all")
+
+# ---- dev-only: rules_kind + rules_itest for the smoke test ------------------
+# Consumers do NOT inherit these. The in-tree smoke test composes a kind
+# cluster, cert-manager via this rule set, and a self-signed Certificate.
+bazel_dep(name = "rules_itest", version = "0.0.52", dev_dependency = True)
+bazel_dep(name = "rules_shell", version = "0.8.0", dev_dependency = True)
+bazel_dep(name = "rules_kind", version = "0.1.1", dev_dependency = True)
+git_override(
+    module_name = "rules_kind",
+    remote = "https://github.com/collider-bazel-extensions/rules_kind",
+    commit = "3f4ff6166c120f9594f572350648c8a9af8616c8",  # v0.1.1
+)
