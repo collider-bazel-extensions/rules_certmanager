@@ -23,7 +23,7 @@ cert_manager_health_check_test_suite(name = "cert_manager_health_check_analysis"
 # kind_cluster -> cert_manager_install -> service_test that mints a
 # Certificate via SelfSigned Issuer and asserts Ready.
 
-kind_cluster(name = "cluster", k8s_version = "1.29")
+kind_cluster(name = "cluster", k8s_version = "1.35")
 
 kind_health_check(name = "cluster_health", cluster = ":cluster")
 
