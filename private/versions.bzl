@@ -19,6 +19,14 @@ CERT_MANAGER_VERSIONS = {
         "url": "https://github.com/cert-manager/cert-manager/releases/download/v1.18.3/cert-manager.yaml",
         "sha256": "f12a78d93d77e1eb9dea0b6d7c931b26da287492fcdf0eb58620142883d4675a",
     },
+    "1.20.5": {
+        "url": "https://github.com/cert-manager/cert-manager/releases/download/v1.20.5/cert-manager.yaml",
+        "sha256": "f015cc08b45072695fd63ea4e0382953cd87f95fc4a837c7c8a9810c0bd7366e",
+    },
+    "1.21.3": {
+        "url": "https://github.com/cert-manager/cert-manager/releases/download/v1.21.3/cert-manager.yaml",
+        "sha256": "c04a51295adda2b1a775146751f973e787190778c7f35180861d9678876e5c74",
+    },
 }
 
 PLATFORMS = {

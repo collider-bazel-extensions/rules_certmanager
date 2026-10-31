@@ -15,9 +15,18 @@ v0.1.x will be removed in a follow-up release in favor of depending on
 rule is platform-independent (just kubectl + a static YAML). See
 [Contributing](#contributing).
 
-**Pinned versions:** cert-manager 1.18.3. The published `cert-manager.yaml`
-release asset is downloaded directly and sha256-verified — **no `helm` is
-required at maintainer or consumer side**.
+**Pinned versions:** the published `cert-manager.yaml` release asset is
+downloaded directly and sha256-verified — **no `helm` is required at
+maintainer or consumer side**. Pick one with `cert_manager.version()`:
+
+| cert-manager | Kubernetes (upstream-supported) | Upstream end of life | Notes |
+|---|---|---|---|
+| `1.21.3` | 1.33 – 1.36 | release of 1.23 | Recommended; the in-tree smoke test runs it on kind 1.35. |
+| `1.20.5` | 1.32 – 1.35 | release of 1.22 | |
+| `1.18.3` | 1.29 – 1.33 | 2026-03-10 (EOL) | Kept for existing consumers. Runs on 1.35 but outside its supported range. |
+
+Kubernetes ranges are from cert-manager's
+[supported releases](https://cert-manager.io/docs/releases/) page.
 
 ---
 
@@ -38,10 +47,10 @@ required at maintainer or consumer side**.
 ## Installation
 
 ```python
-bazel_dep(name = "rules_certmanager", version = "0.1.0")
+bazel_dep(name = "rules_certmanager", version = "0.2.0")
 
 cert_manager = use_extension("@rules_certmanager//:extensions.bzl", "cert_manager")
-cert_manager.version(version = "1.18.3")
+cert_manager.version(version = "1.21.3")  # see the version table above
 use_repo(cert_manager, "cert_manager")
 
 register_toolchains("@cert_manager//:all")
@@ -179,7 +188,7 @@ end-to-end test that mints a SelfSigned Certificate.
 
 | Field | Type | Description |
 |---|---|---|
-| `version` | `string` | cert-manager version, e.g. `"1.18.3"` |
+| `version` | `string` | cert-manager version, e.g. `"1.21.3"` |
 | `manifest` | `File` | The downloaded, sha256-verified `cert-manager.yaml` |
 | `namespace` | `string` | Always `"cert-manager"` (the manifest hard-codes it) |
 

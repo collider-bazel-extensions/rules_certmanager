@@ -40,13 +40,26 @@ Anything cert-manager-specific is flagged.
 - cert-manager has three Deployments (`cert-manager`, `cert-manager-cainjector`, `cert-manager-webhook`) all in the `cert-manager` namespace. The health check waits for all three to reach `Available=True`.
 - The webhook needs CA injection from cainjector to be functional. `Available=True` on the webhook Deployment is a good proxy but not perfect — for tighter readiness, a smoke test should mint a real Certificate via a `SelfSigned` `Issuer` and assert `Ready`. The in-tree smoke test does exactly that.
 
+## Version policy (v0.2.0)
+
+- New cert-manager versions are **added**, never swapped in place: a
+  consumer's `cert_manager.version(version = ...)` keeps working across
+  rules_certmanager releases. 1.18.3 stays for existing consumers although
+  upstream ended its support on 2026-03-10.
+- Pin the latest patch of each upstream-supported minor (currently 1.21
+  and 1.20), plus anything consumers still use.
+- The in-tree smoke test runs the newest pin on the newest rules_kind
+  default (1.21.3 on Kubernetes 1.35). Supported Kubernetes ranges are in
+  the README's version table, copied from
+  <https://cert-manager.io/docs/releases/>.
+
 ## v0.1.0 status (planning)
 
 | Area | State |
 |---|---|
 | MODULE.bazel (Bzlmod-only) | planned |
 | Module extension (`version` only) | planned |
-| Pinned cert-manager 1.18.3 sha256 | planned |
+| Pinned cert-manager sha256s (1.18.3, 1.20.5, 1.21.3 since v0.2.0) | done |
 | `cert_manager_install`, `cert_manager_health_check` rules | planned |
 | `launcher.py` (env, exec, SIGTERM) | planned |
 | Analysis tests | planned |
