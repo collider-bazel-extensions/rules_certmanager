@@ -2,7 +2,7 @@
 
 module(
     name = "rules_certmanager",
-    version = "0.1.0",
+    version = "0.2.0",
 )
 
 bazel_dep(name = "bazel_skylib", version = "1.8.2")
@@ -11,13 +11,15 @@ bazel_dep(name = "rules_python", version = "1.7.0")
 
 cert_manager = use_extension("//:extensions.bzl", "cert_manager")
 
-# Pinned cert-manager release. The extension fetches `cert-manager.yaml`
-# from the matching GitHub release and sha256-verifies it; consumers don't
-# need helm, kubectl-only at runtime. Add more versions by tagging them in
-# private/versions.bzl and calling cert_manager.version() again.
+# Pinned cert-manager release for the in-tree smoke test (this tag only
+# fires when rules_certmanager is the root module; consumers call
+# cert_manager.version() themselves). The extension fetches
+# `cert-manager.yaml` from the matching GitHub release and sha256-verifies
+# it; consumers don't need helm, kubectl-only at runtime. Available
+# versions: private/versions.bzl.
 cert_manager.version(
     name = "cert_manager",
-    version = "1.18.3",
+    version = "1.21.3",
 )
 
 use_repo(cert_manager, "cert_manager")
