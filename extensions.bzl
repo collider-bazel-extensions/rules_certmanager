@@ -1,28 +1,54 @@
 """Bzlmod extension. Same shape as rules_capsule: one `version` tag class."""
 
 load("//private:repositories.bzl", "cert_manager_version_repository")
+load("//private:versions.bzl", "CERT_MANAGER_VERSIONS")
 
 _version_tag = tag_class(attrs = {
     "name": attr.string(default = "cert_manager"),
     "version": attr.string(mandatory = True),
 })
 
+def _tags_by_name(mod):
+    repos = {}
+    for tag in mod.tags.version:
+        prev = repos.get(tag.name)
+        if prev != None and prev != tag.version:
+            fail("rules_certmanager: {} sets cert_manager.version(name = \"{}\") to both {} and {}; set one.".format(
+                "the root module" if mod.is_root else mod.name,
+                tag.name,
+                prev,
+                tag.version,
+            ))
+        repos[tag.name] = tag.version
+    return repos
+
 def _impl(mctx):
-    # Only honor `version` tags from the root module. Without this guard,
-    # both rules_certmanager (when consumed as a dep) and the consumer
-    # would each emit a `@cert_manager` repo with the same `name`, and
-    # Bazel collides them: "A repo named cert_manager is already generated
-    # by this module extension". The library's own MODULE.bazel still
-    # needs `cert_manager.version()` so its in-tree smoke test can build,
-    # but that only fires when rules_certmanager itself is the root.
+    # The extension runs once for the whole build and sees every module's
+    # tags; the repos it creates are global to it, so each name is created
+    # once. rules_certmanager's own MODULE.bazel imports `@cert_manager` and
+    # registers its toolchain for every consumer, so its tags are the base and
+    # the root module's tags override them by name (or add names). Other
+    # modules' tags are ignored. A root without cert_manager.version()
+    # therefore gets rules_certmanager's pinned version.
+    own = {}
+    root = {}
     for mod in mctx.modules:
-        if not mod.is_root:
-            continue
-        for tag in mod.tags.version:
-            cert_manager_version_repository(
-                name = tag.name,
-                version = tag.version,
-            )
+        if mod.is_root:
+            root = _tags_by_name(mod)
+        elif mod.name == "rules_certmanager":
+            own = _tags_by_name(mod)
+    repos = dict(own)
+    repos.update(root)
+    for name, version in repos.items():
+        if version not in CERT_MANAGER_VERSIONS:
+            fail("rules_certmanager: cert_manager.version(version = \"{}\") is not supported. Supported: {}".format(
+                version,
+                ", ".join(sorted(CERT_MANAGER_VERSIONS.keys())),
+            ))
+        cert_manager_version_repository(
+            name = name,
+            version = version,
+        )
 
 cert_manager = module_extension(
     implementation = _impl,

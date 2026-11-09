@@ -47,17 +47,32 @@ Kubernetes ranges are from cert-manager's
 ## Installation
 
 ```python
-bazel_dep(name = "rules_certmanager", version = "0.2.0")
-
-cert_manager = use_extension("@rules_certmanager//:extensions.bzl", "cert_manager")
-cert_manager.version(version = "1.21.3")  # see the version table above
-use_repo(cert_manager, "cert_manager")
-
-register_toolchains("@cert_manager//:all")
+bazel_dep(name = "rules_certmanager", version = "0.2.1")
 ```
 
-`rules_certmanager` is **Bzlmod-only** in v0.1. Until it lands in BCR,
-consume via `archive_override` or a git pin pointing at a tag.
+That's all: rules_certmanager's own `MODULE.bazel` fetches its pinned cert-manager
+(1.21.3) as `@cert_manager` and registers the toolchain. `rules_certmanager` is
+**Bzlmod-only**; until it lands in BCR, consume via `archive_override` or a
+git pin pointing at a tag.
+
+To choose the cert-manager version, set it in your root module:
+
+```python
+cert_manager = use_extension("@rules_certmanager//:extensions.bzl", "cert_manager")
+cert_manager.version(version = "1.21.3")  # see the version table above
+```
+
+The root module's `cert_manager.version()` tags override rules_certmanager's own by
+`name` (default `"cert_manager"`); other modules' tags are ignored. Giving one name
+two versions, or a version not in `private/versions.bzl`, fails with a message
+naming `cert_manager.version`. Through v0.2.0 the root had to set `cert_manager.version()`,
+or resolution failed with `does not generate repository "cert_manager"`; the
+`use_repo(cert_manager, "cert_manager")` / `register_toolchains("@cert_manager//:all")` lines
+earlier READMEs asked for are harmless but no longer needed.
+
+The release archive (the tag tarball) leaves out `tests/` and `tools/`, so
+`bazel query @rules_certmanager//...` works for consumers. A `git_override` clone
+still contains them; name packages instead (for example `@rules_certmanager//:all`).
 
 ---
 
