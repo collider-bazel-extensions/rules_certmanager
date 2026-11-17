@@ -47,7 +47,7 @@ Kubernetes ranges are from cert-manager's
 ## Installation
 
 ```python
-bazel_dep(name = "rules_certmanager", version = "0.2.1")
+bazel_dep(name = "rules_certmanager", version = "0.2.2")
 ```
 
 That's all: rules_certmanager's own `MODULE.bazel` fetches its pinned cert-manager
@@ -241,3 +241,7 @@ log — flips this from "should work" to "verified" in v0.1.x.
 Want Bazel rules for another tool or service?
 [Request a rules package](https://github.com/collider-bazel-extensions/.github/issues/new?template=request-a-rules-package.yml).
 The [organization page](https://github.com/collider-bazel-extensions) lists every package.
+
+## License
+
+[Apache License 2.0](LICENSE) (SPDX: `Apache-2.0`).
